@@ -2486,11 +2486,11 @@ static int macro_key_cmp(const void *a_, const void *b_)
 /* initializes global macros */
 int init_macros(void) {
 	int x;
-	init_macrox_names();
+	init_macrox_names(); // 把156个宏都加到一个数组里面
 
 	for(x = 0; x < 32; x++)
-		illegal_output_char_map[x] = 1;
-	illegal_output_char_map[127] = 1;
+		illegal_output_char_map[x] = 1; // 把前32个都设置成了字符1
+	illegal_output_char_map[127] = 1;  // 把第127 个也设置成字符1
 
 	/*
 	 * non-volatile macros are free()'d when they're set.
@@ -2498,11 +2498,11 @@ int init_macros(void) {
 	 * ones when we get SIGHUP or a RESTART_PROGRAM event
 	 * from the command fifo. Otherwise a memset() would
 	 * have been better.
-	 */
+	 */ // 作了一些myfree的操作
 	clear_volatile_macros_r(&global_macros);
 
 	/* backwards compatibility hack */
-	macro_x = global_macros.x;
+	macro_x = global_macros.x;  // 为了后向兼容
 
 	/*
 	 * Now build an ordered list of X macro names so we can
@@ -2518,7 +2518,7 @@ int init_macros(void) {
 
 		/* This tells which escaping is possible to do on the macro */
 		macro_keys[x].options = URL_ENCODE_MACRO_CHARS;
-		switch(x) {
+		switch(x) { // 对于多数宏，默认的options 就是URL_ENCODE_MACRO_CHARS，但是下面这几个就还要特殊处理
 		case MACRO_HOSTOUTPUT:
 		case MACRO_LONGHOSTOUTPUT:
 		case MACRO_HOSTPERFDATA:
@@ -2547,7 +2547,7 @@ int init_macrox_names(void) {
 	register int x = 0;
 
 	/* initialize macro names */
-	for(x = 0; x < MACRO_X_COUNT; x++)
+	for(x = 0; x < MACRO_X_COUNT; x++)  // 先把156个元素都设置成null
 		macro_x_names[x] = NULL;
 
 	/* initialize each macro name */

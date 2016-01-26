@@ -258,7 +258,7 @@ void init_main_cfg_vars(int first_time) {
 	lock_file = NULL;
 	log_archive_path = NULL;
 	debug_file = NULL;
-
+    // /usr/local/nagios/var/objects.precache
 	object_precache_file = (char *)strdup(DEFAULT_PRECACHED_OBJECT_FILE);
 
 	nagios_user = NULL;
@@ -286,7 +286,7 @@ void init_main_cfg_vars(int first_time) {
 		/* Not sure why this is not reset in reset_variables() */
 		service_check_timeout_state = STATE_CRITICAL;
 		}
-	host_check_timeout = DEFAULT_HOST_CHECK_TIMEOUT;
+	host_check_timeout = DEFAULT_HOST_CHECK_TIMEOUT; // 值得关注
 	event_handler_timeout = DEFAULT_EVENT_HANDLER_TIMEOUT;
 	notification_timeout = DEFAULT_NOTIFICATION_TIMEOUT;
 	ocsp_timeout = DEFAULT_OCSP_TIMEOUT;
@@ -1683,7 +1683,7 @@ void handle_sigxfsz(int sig) {
 	long long size;
 	long long max_size = 0LL;
 	char *max_name = NULL;
-
+    // sig是为了保证我们处理的是正确的消息
 	if(SIGXFSZ == sig) {	/* Make sure we're handling the correct signal */
 		/* Check the current time and if less time has passed since the last
 			time the signal was received, ignore it */
@@ -3371,22 +3371,22 @@ int reset_variables(void) {
 	init_shared_cfg_vars(0);
 
 	/* Finally, set anything not set in the initialization routines */
-	log_file = (char *)strdup(DEFAULT_LOG_FILE);
-	temp_file = (char *)strdup(DEFAULT_TEMP_FILE);
-	temp_path = (char *)strdup(DEFAULT_TEMP_PATH);
-	check_result_path = (char *)strdup(DEFAULT_CHECK_RESULT_PATH);
-	command_file = (char *)strdup(DEFAULT_COMMAND_FILE);
-	lock_file = (char *)strdup(DEFAULT_LOCK_FILE); /* this is kept across restarts */
-	log_archive_path = (char *)strdup(DEFAULT_LOG_ARCHIVE_PATH);
-	debug_file = (char *)strdup(DEFAULT_DEBUG_FILE);
+	log_file = (char *)strdup(DEFAULT_LOG_FILE); // /usr/local/nagios/var/nagios.log
+	temp_file = (char *)strdup(DEFAULT_TEMP_FILE); // /usr/local/nagios/var/tempfile
+	temp_path = (char *)strdup(DEFAULT_TEMP_PATH); // /tmp
+	check_result_path = (char *)strdup(DEFAULT_CHECK_RESULT_PATH); // /usr/local/nagios/var/spool/checkresults
+	command_file = (char *)strdup(DEFAULT_COMMAND_FILE);  // /usr/local/nagios/var/rw/nagios.cmd
+	lock_file = (char *)strdup(DEFAULT_LOCK_FILE); /* this is kept across restarts */ // /usr/local/nagios/var/nagios.lock
+	log_archive_path = (char *)strdup(DEFAULT_LOG_ARCHIVE_PATH); // /usr/local/nagios/var/archives/
+	debug_file = (char *)strdup(DEFAULT_DEBUG_FILE); // /usr/local/nagios/var/nagios.debug
 
 	/* init_main_cfg_vars(0) sets object_precache_file = strdup(DEFAULT_PRECACHED_OBJECT_FILE); */
 
-	nagios_user = (char *)strdup(DEFAULT_NAGIOS_USER);
-	nagios_group = (char *)strdup(DEFAULT_NAGIOS_GROUP);
-
+	nagios_user = (char *)strdup(DEFAULT_NAGIOS_USER);  // nagios
+	nagios_group = (char *)strdup(DEFAULT_NAGIOS_GROUP); // nagios
+    // 111111111111011111111
 	logging_options = NSLOG_RUNTIME_ERROR | NSLOG_RUNTIME_WARNING | NSLOG_VERIFICATION_ERROR | NSLOG_VERIFICATION_WARNING | NSLOG_CONFIG_ERROR | NSLOG_CONFIG_WARNING | NSLOG_PROCESS_INFO | NSLOG_HOST_NOTIFICATION | NSLOG_SERVICE_NOTIFICATION | NSLOG_EVENT_HANDLER | NSLOG_EXTERNAL_COMMAND | NSLOG_PASSIVE_CHECK | NSLOG_HOST_UP | NSLOG_HOST_DOWN | NSLOG_HOST_UNREACHABLE | NSLOG_SERVICE_OK | NSLOG_SERVICE_WARNING | NSLOG_SERVICE_UNKNOWN | NSLOG_SERVICE_CRITICAL | NSLOG_INFO_MESSAGE;
-
+    // 111111111111011111111
 	syslog_options = NSLOG_RUNTIME_ERROR | NSLOG_RUNTIME_WARNING | NSLOG_VERIFICATION_ERROR | NSLOG_VERIFICATION_WARNING | NSLOG_CONFIG_ERROR | NSLOG_CONFIG_WARNING | NSLOG_PROCESS_INFO | NSLOG_HOST_NOTIFICATION | NSLOG_SERVICE_NOTIFICATION | NSLOG_EVENT_HANDLER | NSLOG_EXTERNAL_COMMAND | NSLOG_PASSIVE_CHECK | NSLOG_HOST_UP | NSLOG_HOST_DOWN | NSLOG_HOST_UNREACHABLE | NSLOG_SERVICE_OK | NSLOG_SERVICE_WARNING | NSLOG_SERVICE_UNKNOWN | NSLOG_SERVICE_CRITICAL | NSLOG_INFO_MESSAGE;
 
 	modified_host_process_attributes = MODATTR_NONE;
@@ -3405,7 +3405,7 @@ int reset_variables(void) {
 	child_processes_fork_twice = FALSE;
 
 	/* initialize macros */
-	init_macros();
+	init_macros();  // 初始化156个宏，并且做了一个排序，按照字典序排列
 
 	global_host_event_handler_ptr = NULL;
 	global_service_event_handler_ptr = NULL;
@@ -3414,7 +3414,7 @@ int reset_variables(void) {
 	ochp_command_ptr = NULL;
 
 	/* reset umask */
-	umask(S_IWGRP | S_IWOTH);
+	umask(S_IWGRP | S_IWOTH); // group 和 other可以写？
 
 	return OK;
 	}

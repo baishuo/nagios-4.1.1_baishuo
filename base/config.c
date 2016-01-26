@@ -100,10 +100,10 @@ int read_main_config_file(char *main_config_file) {
 	DIR *tmpdir = NULL;
 	nagios_macros *mac;
 	objectlist *list;
-
+    // 得到全局宏？ 目前都是0x0
 	mac = get_global_macros();
 
-
+    // 将configfile 映射成mmap
 	/* open the config file for reading */
 	if((thefile = mmap_fopen(main_config_file)) == NULL) {
 		logit(NSLOG_CONFIG_ERROR, TRUE, "Error: Cannot open main configuration file '%s' for reading!", main_config_file);
@@ -111,32 +111,32 @@ int read_main_config_file(char *main_config_file) {
 		}
 
 	/* save the main config file macro */
-	my_free(mac->x[MACRO_MAINCONFIGFILE]);
+	my_free(mac->x[MACRO_MAINCONFIGFILE]); // 先释放，再存入字符串
 	if((mac->x[MACRO_MAINCONFIGFILE] = (char *)strdup(main_config_file)))
 		strip(mac->x[MACRO_MAINCONFIGFILE]);
-
+    // 处理 配置文件所有的行
 	/* process all lines in the config file */
 	while(1) {
-
+        // 清空几个内存
 		/* free memory */
 		my_free(input);
 		my_free(variable);
 		my_free(value);
-
+        // 从配置文件中读入一行
 		/* read the next line */
 		if((input = mmap_fgets_multiline(thefile)) == NULL)
 			break;
 
 		current_line = thefile->current_line;
 
-		strip(input);
-
+		strip(input); // 去空格?
+        // 如果这一行是注释行或者以 '\x0' 开头，就去读下一行
 		/* skip blank lines and comments */
 		if(input[0] == '\x0' || input[0] == '#')
 			continue;
-
+        // 得到key=value的行
 		/* get the variable name */
-		if((temp_ptr = my_strtok(input, "=")) == NULL) {
+		if((temp_ptr = my_strtok(input, "=")) == NULL) { // 以等号进行分割
 			asprintf(&error_message, "NULL variable");
 			error = TRUE;
 			break;
@@ -158,9 +158,9 @@ int read_main_config_file(char *main_config_file) {
 			error = TRUE;
 			break;
 			}
-		strip(variable);
+		strip(variable); // 处理一下变量和value
 		strip(value);
-
+        // 下面的逻辑开始处理变量
 		/* process the variable/value */
 
 		if(!strcmp(variable, "resource_file")) {
@@ -183,7 +183,7 @@ int read_main_config_file(char *main_config_file) {
 			my_free(qh_socket_path);
 			qh_socket_path = nspath_absolute(value, config_file_dir);
 		}
-		else if(!strcmp(variable, "log_file")) {
+		else if(!strcmp(variable, "log_file")) { // strcmp(variable, "log_file") 返回 0
 
 			if(strlen(value) > MAX_FILENAME_LENGTH - 1) {
 				asprintf(&error_message, "Log file is too long");
@@ -193,7 +193,7 @@ int read_main_config_file(char *main_config_file) {
 
 			my_free(log_file);
 			log_file = nspath_absolute(value, config_file_dir);
-			/* make sure the configured logfile takes effect */
+			/* make sure the configured logfile takes effect */ // 确保logfile 管用
 			close_log_file();
 			}
 		else if(!strcmp(variable, "debug_level"))
@@ -1149,7 +1149,7 @@ int read_main_config_file(char *main_config_file) {
 		else if(!strcmp(variable,"service_perfdata_process_empty_results"))
 			service_perfdata_process_empty_results = (atoi(value) > 0) ? TRUE : FALSE;
 		/*** END perfdata variables */
-
+        // cfg_file 先不处理？
 		else if(strstr(input, "cfg_file=") == input || strstr(input, "cfg_dir=") == input)
 			continue;
 		else if(strstr(input, "object_cache_file=") == input) {

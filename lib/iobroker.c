@@ -127,7 +127,7 @@ struct iobroker_set *iobroker_create(void)
 	}
 
 	iobs->max_fds = iobroker_max_usable_fds();
-	iobs->iobroker_fds = calloc(iobs->max_fds, sizeof(iobroker_fd *));
+	iobs->iobroker_fds = calloc(iobs->max_fds, sizeof(iobroker_fd *)); // 申请4096 * 8 这么大的内存
 	if (!iobs->iobroker_fds) {
 		goto error_out;
 	}
@@ -136,7 +136,7 @@ struct iobroker_set *iobroker_create(void)
 	{
 		int flags;
 
-		iobs->ep_events = calloc(iobs->max_fds, sizeof(struct epoll_event));
+		iobs->ep_events = calloc(iobs->max_fds, sizeof(struct epoll_event)); // 申请4096 * 8 这么大的内存
 		if (!iobs->ep_events) {
 			goto error_out;
 		}
@@ -145,7 +145,7 @@ struct iobroker_set *iobroker_create(void)
 		if (iobs->epfd < 0) {
 			goto error_out;
 		}
-
+        // 得到fd，修改后再写回去，注意F_GETFD 和 F_SETFD
 		flags = fcntl(iobs->epfd, F_GETFD);
 		flags |= FD_CLOEXEC;
 		fcntl(iobs->epfd, F_SETFD, flags);

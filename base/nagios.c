@@ -245,8 +245,8 @@ int main(int argc, char **argv) {
 		};
 #define getopt(argc, argv, o) getopt_long(argc, argv, o, long_options, &option_index)
 #endif
-
-	memset(&loadctl, 0, sizeof(loadctl));
+    // Details:{last_check = 0, last_change = 0, check_interval = 0, load = {0, 0, 0}, backoff_limit = 0, rampup_limit = 0, backoff_change = 0, rampup_change = 0, changes = 0, jobs_max = 0, jobs_limit = 0, jobs_min = 0, jobs_running = 0, nproc_limit = 0, nofile_limit = 0, options = 0}
+	memset(&loadctl, 0, sizeof(loadctl)); // sizeof(loadctl)等于 96
 	mac = get_global_macros();
 
 	/* make sure we have the correct number of command line arguments */
@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
 		error = TRUE;
 
 	/* get all command line arguments */
-	while(1) {
+	while(1) { // 处理各种命令选项，但是只能在 hVvdspuxTW 里面才是合理的命令选项
 		c = getopt(argc, argv, "+hVvdspuxTW");
 
 		if(c == -1 || c == EOF)
@@ -279,7 +279,7 @@ int main(int argc, char **argv) {
 				test_scheduling = TRUE;
 				break;
 
-			case 'd': /* daemon mode */
+			case 'd': /* daemon mode */  // d表示后台模式
 				daemon_mode = TRUE;
 				break;
 
@@ -311,11 +311,11 @@ int main(int argc, char **argv) {
 	mtrace();
 #endif
 	/* if we're a worker we can skip everything below */
-	if(worker_socket) {
+	if(worker_socket) { // 如果是worker，后面的操作就都可以跳过了
 		exit(nagios_core_worker(worker_socket));
 	}
 
-	/* Initialize configuration variables */                             
+	/* Initialize configuration variables */  // 第一次初始化配置变量，这两个函数传入一个参数1，表示是第一次
 	init_main_cfg_vars(1);
 	init_shared_cfg_vars(1);
 
@@ -379,7 +379,7 @@ int main(int argc, char **argv) {
 	 * config file is last argument specified.
 	 * Make sure it uses an absolute path
 	 */
-	config_file = nspath_absolute(argv[optind], NULL);
+	config_file = nspath_absolute(argv[optind], NULL); // "/baishuosoftware/opensource/cpp/nagios-4.1.1/sample-config"
 	if(config_file == NULL) {
 		printf("Error allocating memory.\n");
 		exit(ERROR);
@@ -391,13 +391,13 @@ int main(int argc, char **argv) {
 	 * Set the signal handler for the SIGXFSZ signal here because
 	 * we may encounter this signal before the other signal handlers
 	 * are set.
-	 */
+	 */ // 如果系统产生了SIGXFSZ 消息，就让 handle_sigxfsz 来处理
 	signal(SIGXFSZ, handle_sigxfsz);
 
 	/*
 	 * let's go to town. We'll be noisy if we're verifying config
 	 * or running scheduling tests.
-	 */
+	 */ //如果这三项里有一个为true，就执行这个if分支，否这就开始监控
 	if(verify_config || test_scheduling || precache_objects) {
 		reset_variables();
 		/*
@@ -529,7 +529,7 @@ int main(int argc, char **argv) {
 		exit(result);
 		}
 
-
+    // 开始监控
 	/* else start to monitor things... */
 	else {
 
@@ -538,8 +538,8 @@ int main(int argc, char **argv) {
 		 * it absolute so we can launch our workers.
 		 * If not, we needn't bother, as we're using execvp()
 		 */
-		if (strchr(argv[0], '/'))
-			nagios_binary_path = nspath_absolute(argv[0], NULL);
+		if (strchr(argv[0], '/')) // 判断是不是绝对路径，也就是是否以/开头
+			nagios_binary_path = nspath_absolute(argv[0], NULL); // /baishuosoftware/opensource/cpp/nagios-4.1.1/base/nagios
 		else
 			nagios_binary_path = strdup(argv[0]);
 
@@ -548,7 +548,7 @@ int main(int argc, char **argv) {
 			exit(EXIT_FAILURE);
 			}
 
-		if (!(nagios_iobs = iobroker_create())) {
+		if (!(nagios_iobs = iobroker_create())) { //得到最大文件数（默认4096），申请几部分内存 调用epoll_create  创建 iobs->epfd
 			logit(NSLOG_RUNTIME_ERROR, TRUE, "Error: Failed to create IO broker set: %s\n",
 				  strerror(errno));
 			exit(EXIT_FAILURE);
@@ -562,15 +562,15 @@ int main(int argc, char **argv) {
 			sig_id = 0;
 
 			/* reset program variables */
-			reset_variables();
+			reset_variables(); // 调用一系列的myfree后，又调用 init_main_cfg_vars(0) 和 init_shared_cfg_vars(0);
 			timing_point("Variables reset\n");
 
 			/* get PID */
 			nagios_pid = (int)getpid();
 
 			/* read in the configuration files (main and resource config files) */
-			result = read_main_config_file(config_file);
-			if (result != OK) {
+			result = read_main_config_file(config_file); // 开始读配置文件！！！
+			if (result != OK) { // 如果结果不是ok，就得退出
 				logit(NSLOG_CONFIG_ERROR, TRUE, "Error: Failed to process config file '%s'. Aborting\n", config_file);
 				exit(EXIT_FAILURE);
 				}

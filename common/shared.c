@@ -43,7 +43,7 @@ int obsess_over_hosts;
 char *config_file_dir = NULL;
 
 void init_shared_cfg_vars(int first_time) {
-	date_format = DATE_FORMAT_US;
+	date_format = DATE_FORMAT_US; // MM-DD-YYYY HH:MM:SS
 	interval_length = DEFAULT_INTERVAL_LENGTH;
 	if(first_time) {
 		/* Not sure why these are not reset in reset_variables() */
@@ -51,7 +51,7 @@ void init_shared_cfg_vars(int first_time) {
 	}
 	program_start = 0L;
 	log_rotation_method = LOG_ROTATION_NONE;
-
+    // "/usr/local/nagios/var/objects.cache"
 	object_cache_file = strdup(DEFAULT_OBJECT_CACHE_FILE);
 
 	process_performance_data = DEFAULT_PROCESS_PERFORMANCE_DATA;
@@ -187,13 +187,13 @@ mmapfile *mmap_fopen(const char *filename) {
 	/* allocate memory */
 	if((new_mmapfile = (mmapfile *) malloc(sizeof(mmapfile))) == NULL)
 		return NULL;
-
+    // 尝试能否打开文件
 	/* open the file */
 	if((fd = open(filename, mode)) == -1) {
 		my_free(new_mmapfile);
 		return NULL;
 		}
-
+    // 得到文件信息，放入statbuf 里面
 	/* get file info */
 	if((fstat(fd, &statbuf)) == -1) {
 		close(fd);
@@ -202,11 +202,11 @@ mmapfile *mmap_fopen(const char *filename) {
 		}
 
 	/* get file size */
-	file_size = (unsigned long)statbuf.st_size;
+	file_size = (unsigned long)statbuf.st_size; // 44831
 
 	/* only mmap() if we have a file greater than 0 bytes */
 	if(file_size > 0) {
-
+        // mmap 是一个系统函数，如果创建失败就关闭fd，并且释放之前 分配的内存
 		/* mmap() the file - allocate one extra byte for processing zero-byte files */
 		if((mmap_buf =
 		            (void *)mmap(0, file_size, PROT_READ, MAP_PRIVATE, fd,
@@ -220,12 +220,12 @@ mmapfile *mmap_fopen(const char *filename) {
 		mmap_buf = NULL;
 
 	/* populate struct info for later use */
-	new_mmapfile->path = (char *)strdup(filename);
-	new_mmapfile->fd = fd;
-	new_mmapfile->file_size = (unsigned long)file_size;
+	new_mmapfile->path = (char *)strdup(filename); // "/baishuosoftware/opensource/cpp/nagios-4.1.1/sample-config/nagios.cfg"
+	new_mmapfile->fd = fd; // 4
+	new_mmapfile->file_size = (unsigned long)file_size; // 44831
 	new_mmapfile->current_position = 0L;
 	new_mmapfile->current_line = 0L;
-	new_mmapfile->mmap_buf = mmap_buf;
+	new_mmapfile->mmap_buf = mmap_buf; // 0x7ffff7ff2000
 
 	return new_mmapfile;
 	}
